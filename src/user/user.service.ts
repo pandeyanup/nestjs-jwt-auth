@@ -14,14 +14,6 @@ export class UserService {
     });
   }
 
-  async oneUser(): Promise<User> {
-    return this.prisma.user.findUnique({
-      where: {
-        email: 'neko@neko.com',
-      },
-    });
-  }
-
   async users(params: {
     skip?: number;
     take?: number;
