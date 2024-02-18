@@ -14,6 +14,7 @@ async function bootstrap() {
       // },
     }),
   );
+  app.setGlobalPrefix('api');
   await app.listen(parseInt(process.env.DATABASE_PORT, 10) || 3000);
 }
 bootstrap();

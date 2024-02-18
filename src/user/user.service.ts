@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
+import { compare, genSalt, hash } from 'bcrypt';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
@@ -11,6 +12,9 @@ export class UserService {
   ): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: userWhereUniqueInput,
+      include: {
+        products: true,
+      },
     });
   }
 
@@ -28,6 +32,9 @@ export class UserService {
       cursor,
       where,
       orderBy,
+      include: {
+        products: true,
+      },
     });
   }
 
@@ -62,5 +69,19 @@ export class UserService {
     return this.prisma.user.delete({
       where,
     });
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    // Hash password
+    const salt = await genSalt(10);
+    const hashedPassword = await hash(password, salt);
+    return hashedPassword;
+  }
+
+  async comparePassword(
+    password: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    return await compare(password, hashedPassword);
   }
 }

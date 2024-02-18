@@ -6,8 +6,16 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  USER
+  MODERATOR
+  ADMIN
+  SUPERADMIN
 }
 
 model User {
@@ -15,7 +23,8 @@ model User {
   email     String    @unique
   name      String
   password  String
-  product   Product[]
+  role      Role
+  products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }

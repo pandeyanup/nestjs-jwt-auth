@@ -14,10 +14,13 @@ import {
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { ProductsService } from './products.service';
 import { ProductPayloadDto } from './dto/product.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RoleGuard } from 'src/auth/guards/role.guard';
+import { Role } from '@prisma/client';
 
 @Controller('products')
 export class ProductsController {
-  constructor(private porductService: ProductsService) {}
+  constructor(private readonly porductService: ProductsService) {}
 
   @Get()
   async getAllProducts() {
@@ -26,19 +29,22 @@ export class ProductsController {
       skip: 0,
     });
 
-    if (!products) return 'No products found';
+    if (products.length === 0) {
+      return new HttpException('No products found', HttpStatus.NOT_FOUND);
+    }
     return products;
   }
 
   @Post('add')
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.SUPERADMIN, Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RoleGuard)
   async addProduct(@Request() req, @Body() body: ProductPayloadDto) {
     const user = req.user;
     const product = await this.porductService.createProduct({
       name: body.name,
       description: body.description,
       price: body.price,
-      user: {
+      User: {
         connect: {
           id: user.id,
         },
@@ -53,7 +59,8 @@ export class ProductsController {
   }
 
   @Delete('delete/:id')
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.SUPERADMIN, Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RoleGuard)
   async deleteProduct(@Request() req, @Param('id') id: string) {
     const prodcut = await this.porductService.product({ id });
     if (!prodcut)
@@ -73,7 +80,8 @@ export class ProductsController {
   }
 
   @Patch('update/:id')
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MODERATOR)
+  @UseGuards(JwtAuthGuard, RoleGuard)
   async updateProduct(
     @Request() req,
     @Param('id') id: string,
@@ -105,7 +113,6 @@ export class ProductsController {
     return updatedProduct;
   }
 
-  // http://127.0.0.1:3001/products/filter?name=cat&price=36
   @Get('filter')
   async filterProducts(@Request() req) {
     const { name, price } = req.query;
@@ -121,7 +128,9 @@ export class ProductsController {
       },
     });
 
-    if (!results) return 'No products found';
+    if (results.length === 0) {
+      return new HttpException('No products found', HttpStatus.NOT_FOUND);
+    }
     return results;
   }
 
