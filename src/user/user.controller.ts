@@ -5,6 +5,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Logger,
   Param,
   Patch,
   Post,
@@ -20,7 +21,12 @@ import { Role } from '@prisma/client';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  // adding logger to the user controller
+  private readonly logger: Logger;
+
+  constructor(private readonly userService: UserService) {
+    this.logger = new Logger(UserController.name);
+  }
 
   @Get('all')
   @Roles(Role.ADMIN, Role.SUPERADMIN, Role.MODERATOR)
