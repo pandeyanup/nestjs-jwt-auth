@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from 'src/user/user.service';
-import { SignupPayloadDto } from './dto/auth.dto';
 import { Role } from '@prisma/client';
+import { UserService } from 'src/user/user.service';
+import { SignupPayloadDto, UserAuthResponseDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -26,8 +26,12 @@ export class AuthService {
       user &&
       (await this.userService.comparePassword(password, user.password))
     ) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...result } = user;
+      const result: UserAuthResponseDto = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      };
+
       return {
         data: result,
         token: this.jwtService.sign(result),
@@ -57,7 +61,7 @@ export class AuthService {
     payload.password = await this.userService.hashPassword(payload.password);
     console.log(payload.password);
     // new user role is always USER
-    // Admins can change roles of users
+    // Admins can change role of user
     const userPayload = { ...payload, role: Role.USER };
     const user = await this.userService.createUser(userPayload);
     if (!user)
@@ -65,9 +69,11 @@ export class AuthService {
         'Error creating user',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-    // remove password from user object
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = user;
+    const result: UserAuthResponseDto = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    };
     const token = this.jwtService.sign(result);
     return { data: result, token: token };
   }

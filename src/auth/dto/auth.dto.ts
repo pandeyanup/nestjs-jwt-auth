@@ -33,3 +33,9 @@ export class AuthPayloadDto {
   @MaxLength(18, { message: 'Password must be at most 18 characters long' })
   password: string;
 }
+
+export class UserAuthResponseDto {
+  id: string;
+  email: string;
+  name: string;
+}
