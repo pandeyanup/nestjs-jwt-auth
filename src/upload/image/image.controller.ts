@@ -25,7 +25,9 @@ export class ImageController {
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({ fileType: 'image/jpeg' })
-        .addMaxSizeValidator({ maxSize: 5 * 1024 * 1024 })
+        // file type validation for music file
+        // .addFileTypeValidator({ fileType: 'audio/mpeg' })
+        .addMaxSizeValidator({ maxSize: 50 * 1024 * 1024 })
         .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
     )
     file: Express.Multer.File,
@@ -34,6 +36,9 @@ export class ImageController {
     const id = uuidv4();
     const filePath = `./uploads/${id}-${file.originalname}`;
     fs.writeFileSync(filePath, file.buffer);
-    return { filePath };
+    return {
+      data: { id, path: filePath },
+      message: 'File uploaded successfully',
+    };
   }
 }

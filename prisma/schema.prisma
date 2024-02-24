@@ -32,7 +32,7 @@ model User {
 model Image {
   id        String  @id @default(uuid())
   name      String
-  url       String
+  path      String
   productId String
   Product   Product @relation(fields: [productId], references: [id])
 }
